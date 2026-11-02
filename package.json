@@ -1,0 +1,14 @@
+{
+  "name": "qna-my-reminder",
+  "version": "1.00.00",
+  "description": "Advanced Full-Screen Notification, Task, Schedule & Voice Reminder Control Suite (QNA Anabi Edition)",
+  "main": "src/cli-start-server.js",
+  "scripts": {
+    "start": "node src/cli-start-server.js",
+    "test": "node tests/verify-reminder-suite.js && node scripts/rules/check-single-function-file.js",
+    "test:rules": "node scripts/rules/check-single-function-file.js",
+    "test:parser": "node tests/verify-natural-parser.js",
+    "test:suite": "node tests/verify-reminder-suite.js"
+  },
+  "private": true
+}

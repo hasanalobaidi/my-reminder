@@ -1,0 +1,1 @@
+/Users/Hasan/Desktop/QNA work/AGENTS.md

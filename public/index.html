@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>MyReminder Control — QNA Task, Schedule &amp; Full-Screen Alarm Suite</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand-group">
+      <div class="brand-badge" aria-hidden="true">Q</div>
+      <div>
+        <h1 class="brand-title">MyReminder Control Center</h1>
+        <p class="brand-subtitle">Full-Screen Notifications • Schedules &amp; Alarms • Voice Notes • TTS &amp; STT</p>
+      </div>
+    </div>
+    <div class="header-controls">
+      <span id="live-qatar-clock" class="clock-pill" aria-live="polite">Loading Qatar time...</span>
+      <button type="button" id="open-new-reminder-btn" class="btn btn-accent">+ New Reminder / Job</button>
+    </div>
+  </header>
+
+  <main class="app-container">
+    <!-- Smart Natural Language & Voice-to-Text Bar -->
+    <section class="smart-bar-card" aria-labelledby="smart-bar-heading">
+      <div class="smart-bar-header">
+        <div>
+          <h2 id="smart-bar-heading" class="smart-bar-title">Smart Natural-Language &amp; Voice Command Bar</h2>
+          <p id="smart-bar-hint" class="field-hint">
+            Type or dictate a full schedule in plain English (with automatic typo correction). Example:
+            <em>"set remonder, on tuesdsday, wednesday, to prepare the 3 weekly templates, to be ready on thursady on QNA post editor, remond me at 11 am, 3 pm"</em>
+          </p>
+        </div>
+        <button type="button" id="smart-fill-example-btn" class="btn btn-sm btn-secondary">📋 Load QNA Example</button>
+      </div>
+
+      <form id="smart-command-form" class="smart-bar-row" novalidate>
+        <input
+          type="text"
+          id="smart-command-input"
+          class="smart-bar-input"
+          aria-describedby="smart-bar-hint"
+          placeholder="set reminder, on tuesday, wednesday, to prepare the 3 weekly templates, to be ready on thursday on QNA post editor, remind me at 11 am, 3 pm"
+        >
+        <select id="smart-dictate-lang" class="lang-select" aria-label="Voice dictation language">
+          <option value="en-US">EN (Voice)</option>
+          <option value="ar-QA">AR (عربي)</option>
+        </select>
+        <button type="button" id="smart-dictate-btn" class="btn btn-secondary">🎙️ Voice to Text</button>
+        <button type="button" id="smart-customize-btn" class="btn btn-secondary">⚙️ Customize in Form</button>
+        <button type="submit" id="smart-create-btn" class="btn btn-primary">⚡ Quick Schedule</button>
+      </form>
+      <div id="smart-voice-status" class="field-hint" aria-live="polite"></div>
+      <div id="smart-parse-preview" class="smart-parse-preview" hidden aria-live="polite"></div>
+    </section>
+
+    <!-- Filter Tabs & Search Toolbar -->
+    <section class="dashboard-toolbar" aria-label="Filter and Search Reminders">
+      <div class="filter-tabs" role="tablist">
+        <button type="button" class="filter-tab-btn is-active" data-status-tab="active">
+          Active (<span id="count-active">0</span>)
+        </button>
+        <button type="button" class="filter-tab-btn" data-status-tab="completed">
+          Completed / Ready (<span id="count-completed">0</span>)
+        </button>
+        <button type="button" class="filter-tab-btn" data-status-tab="trashed">
+          30-Day Trash (<span id="count-trashed">0</span>)
+        </button>
+      </div>
+
+      <div class="settings-strip">
+        <label for="filter-project-select">
+          <span>Project:</span>
+          <select id="filter-project-select">
+            <option value="all">All Projects</option>
+            <option value="QNA post editor">QNA post editor</option>
+            <option value="Infographics">Infographics</option>
+            <option value="Weather Video">Weather Video</option>
+            <option value="General">General</option>
+          </select>
+        </label>
+        <input
+          type="search"
+          id="filter-search-input"
+          placeholder="Search tasks, days, notes..."
+          aria-label="Search reminders"
+        >
+      </div>
+    </section>
+
+    <!-- Reminders Cards Grid -->
+    <section id="reminders-grid" class="reminders-grid" aria-live="polite"></section>
+  </main>
+
+  <!-- Native Modal Dialog: Create / Edit Reminder -->
+  <dialog id="reminder-editor-dialog" closedby="any" aria-labelledby="editor-dialog-title">
+    <div class="dialog-header">
+      <h2 id="editor-dialog-title">New Reminder / Job Schedule</h2>
+      <button type="button" id="editor-cancel-btn" class="btn btn-sm btn-secondary">✕ Close</button>
+    </div>
+    <form id="reminder-editor-form" class="dialog-body" novalidate>
+      <div class="form-group">
+        <label for="field-title">Task / Alarm Title *</label>
+        <p id="field-title-hint" class="field-hint">Required: Enter at least 2 characters describing the job, task, or alarm.</p>
+        <input
+          type="text"
+          id="field-title"
+          required
+          minlength="2"
+          aria-describedby="field-title-hint field-title-error"
+          placeholder="Prepare the 3 weekly templates"
+        >
+        <span id="field-title-error" class="error-message" role="alert">Please enter a task or alarm title (minimum 2 characters).</span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="field-project">Project / Section</label>
+          <p class="field-hint">Target QNA platform or workflow section.</p>
+          <input type="text" id="field-project" value="QNA post editor" placeholder="QNA post editor">
+        </div>
+
+        <div class="form-group">
+          <label for="field-schedule-type">Recurrence Mode</label>
+          <p class="field-hint">Weekly on selected days, daily, or one-time.</p>
+          <select id="field-schedule-type">
+            <option value="weekly">Weekly (Selected Days)</option>
+            <option value="daily">Daily (Every Day)</option>
+            <option value="once">One-Time Date/Time</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="field-priority">Priority Level</label>
+          <p class="field-hint">Controls visual urgency &amp; alert styling.</p>
+          <select id="field-priority">
+            <option value="high">High</option>
+            <option value="critical">Critical</option>
+            <option value="normal">Normal</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Reminder Days of the Week</label>
+        <p class="field-hint">Select every day this reminder should trigger (e.g., Tuesday &amp; Wednesday).</p>
+        <div class="days-pill-group">
+          <label class="day-pill"><input type="checkbox" name="dayOfWeek" value="sunday"> Sunday</label>
+          <label class="day-pill"><input type="checkbox" name="dayOfWeek" value="monday"> Monday</label>
+          <label class="day-pill"><input type="checkbox" name="dayOfWeek" value="tuesday" checked> Tuesday</label>
+          <label class="day-pill"><input type="checkbox" name="dayOfWeek" value="wednesday" checked> Wednesday</label>
+          <label class="day-pill"><input type="checkbox" name="dayOfWeek" value="thursday"> Thursday</label>
+          <label class="day-pill"><input type="checkbox" name="dayOfWeek" value="friday"> Friday</label>
+          <label class="day-pill"><input type="checkbox" name="dayOfWeek" value="saturday"> Saturday</label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="editor-new-time-input">Reminder Alarm Times (Multiple per Day)</label>
+          <p class="field-hint">Add one or more times (e.g., 11:00 AM and 3:00 PM).</p>
+          <div id="editor-times-list" class="times-chip-list"></div>
+          <div class="smart-bar-row" style="margin-top: 0.45rem;">
+            <input type="time" id="editor-new-time-input" value="15:00" aria-label="New alarm time">
+            <button type="button" id="editor-add-time-btn" class="btn btn-sm btn-secondary">+ Add Time</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="field-ready-day">Target Ready / Deadline Day</label>
+          <p class="field-hint">Day when the work must be ready (e.g., Thursday).</p>
+          <select id="field-ready-day">
+            <option value="">No specific deadline day</option>
+            <option value="sunday">Sunday</option>
+            <option value="monday">Monday</option>
+            <option value="tuesday">Tuesday</option>
+            <option value="wednesday">Wednesday</option>
+            <option value="thursday" selected>Thursday</option>
+            <option value="friday">Friday</option>
+            <option value="saturday">Saturday</option>
+          </select>
+
+          <label for="field-one-time" style="margin-top: 0.6rem;">One-Time Trigger (Optional)</label>
+          <input type="datetime-local" id="field-one-time">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="editor-new-subtask-input">Subtasks / Preparation Checklist</label>
+        <p class="field-hint">Track individual items (such as Weekly Template #1, #2, #3).</p>
+        <div id="editor-subtasks-list" class="subtasks-editor-list"></div>
+        <div class="smart-bar-row" style="margin-top: 0.45rem;">
+          <input type="text" id="editor-new-subtask-input" placeholder="e.g. Weekly template #1" style="flex: 1;">
+          <button type="button" id="editor-add-subtask-btn" class="btn btn-sm btn-secondary">+ Add Checklist Item</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="smart-bar-header">
+          <label for="field-notes">Notes (With Voice-to-Text &amp; Text-to-Voice)</label>
+          <div class="smart-bar-row">
+            <select id="editor-dictate-lang" class="lang-select" aria-label="Notes dictation language">
+              <option value="en-US">EN</option>
+              <option value="ar-QA">AR</option>
+            </select>
+            <button type="button" id="editor-dictate-notes-btn" class="btn btn-sm btn-secondary">🎙️ Voice to Text</button>
+            <button type="button" id="editor-speak-notes-btn" class="btn btn-sm btn-secondary">🔊 Read Notes Aloud (TTS)</button>
+          </div>
+        </div>
+        <textarea id="field-notes" rows="3" placeholder="Add preparation notes, instructions, or links..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="editor-voice-label-input">Recorded Voice Notes (Microphone Audio Memos)</label>
+        <p class="field-hint">Record real audio voice memos attached to this reminder and playable in full-screen alerts.</p>
+        <div class="smart-bar-row">
+          <input type="text" id="editor-voice-label-input" placeholder="Voice note label (optional)" style="flex: 1;">
+          <button type="button" id="editor-record-voice-btn" class="btn btn-sm btn-secondary">🎙️ Record Voice Note</button>
+        </div>
+        <div id="editor-voice-status" class="field-hint" aria-live="polite"></div>
+        <div id="editor-voice-notes-list" class="voice-notes-editor-list"></div>
+      </div>
+
+      <div class="form-row">
+        <label class="day-pill">
+          <input type="checkbox" id="field-fullscreen-enabled" checked>
+          <span>🚨 Show Full-Screen Alert Window</span>
+        </label>
+        <label class="day-pill">
+          <input type="checkbox" id="field-tts-enabled" checked>
+          <span>🔊 Speak Reminder Aloud (Text-to-Voice)</span>
+        </label>
+      </div>
+
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-secondary" onclick="document.getElementById('reminder-editor-dialog').close('cancel')">Cancel</button>
+        <button type="submit" class="btn btn-primary">💾 Save Reminder Schedule</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Native Modal Dialog: Full-Screen Alert Overlay -->
+  <dialog id="fullscreen-alert-dialog" class="fullscreen-dialog" aria-labelledby="fs-alert-title">
+    <div class="fullscreen-alert-shell">
+      <div class="fullscreen-alert-top">
+        <span id="fs-alert-project" class="fullscreen-badge-category">QNA post editor</span>
+        <span id="fs-alert-clock" class="fullscreen-clock">11:00 AM</span>
+      </div>
+
+      <h2 id="fs-alert-title" class="fullscreen-title">Prepare the 3 weekly templates</h2>
+
+      <div class="fullscreen-meta-row">
+        <span id="fs-alert-schedule" class="fullscreen-pill">Tuesday, Wednesday · 11:00 AM, 3:00 PM</span>
+        <span id="fs-alert-ready" class="fullscreen-pill fullscreen-pill-deadline">Target Deadline: Ready on Thursday</span>
+      </div>
+
+      <div id="fs-alert-notes" class="fullscreen-notes"></div>
+      <div id="fs-alert-subtasks" class="fullscreen-checklist"></div>
+      <div id="fs-alert-voice-notes" class="fullscreen-voice-box"></div>
+
+      <div class="fullscreen-actions-bar">
+        <div class="snooze-group">
+          <button type="button" class="btn btn-secondary" data-fs-action="snooze" data-snooze-min="5">💤 Snooze 5m</button>
+          <button type="button" class="btn btn-secondary" data-fs-action="snooze" data-snooze-min="15">💤 Snooze 15m</button>
+          <button type="button" class="btn btn-secondary" data-fs-action="snooze" data-snooze-min="60">💤 Snooze 1h</button>
+          <button type="button" class="btn btn-secondary" data-fs-action="speak-again">🔊 Speak Again (TTS)</button>
+          <button type="button" class="btn btn-secondary" data-fs-action="stop-voice">🔇 Mute Audio</button>
+        </div>
+        <div class="primary-alert-group">
+          <button type="button" class="btn btn-accent" data-fs-action="complete">✅ Mark Ready / Complete</button>
+          <button type="button" class="btn btn-primary" data-fs-action="dismiss">✕ Dismiss Alert</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="/js/escape-html.js"></script>
+  <script src="/js/format-schedule-summary.js"></script>
+  <script src="/js/speak-browser-tts.js"></script>
+  <script src="/js/start-voice-dictation.js"></script>
+  <script src="/js/play-alarm-chime.js"></script>
+  <script src="/js/manage-voice-note-recorder.js"></script>
+  <script src="/js/render-fullscreen-alert.js"></script>
+  <script src="/js/render-reminder-cards.js"></script>
+  <script src="/js/init-reminder-dashboard.js"></script>
+  <script>
+    window.QNA.initReminderDashboard();
+  </script>
+</body>
+</html>

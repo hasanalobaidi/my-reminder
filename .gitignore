@@ -1,0 +1,9 @@
+node_modules/
+data/*.json
+data/*.log
+data/voice-notes/
+backups/
+.env
+*.local
+*.local.json
+.DS_Store

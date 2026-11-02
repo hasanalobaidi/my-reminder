@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>MyReminder Full-Screen Alert</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="standalone-fullscreen-body">
+  <main class="fullscreen-alert-shell">
+    <div class="fullscreen-alert-top">
+      <span id="standalone-fs-project" class="fullscreen-badge-category">QNA post editor</span>
+      <span id="standalone-fs-clock" class="fullscreen-clock">11:00:00 AM</span>
+    </div>
+
+    <h1 id="standalone-fs-title" class="fullscreen-title">Prepare the 3 weekly templates</h1>
+
+    <div class="fullscreen-meta-row">
+      <span id="standalone-fs-schedule" class="fullscreen-pill">📅 Tuesday, Wednesday · ⏰ 11:00 AM, 3:00 PM</span>
+      <span id="standalone-fs-ready" class="fullscreen-pill fullscreen-pill-deadline">🎯 Target Deadline: Ready on Thursday</span>
+    </div>
+
+    <div id="standalone-fs-notes" class="fullscreen-notes"></div>
+    <div id="standalone-fs-subtasks" class="fullscreen-checklist"></div>
+    <div id="standalone-fs-voicenotes" class="fullscreen-voice-box"></div>
+
+    <div class="fullscreen-actions-bar">
+      <div class="snooze-group">
+        <button type="button" class="btn btn-secondary" data-standalone-action="snooze" data-snooze-min="5">💤 Snooze 5m</button>
+        <button type="button" class="btn btn-secondary" data-standalone-action="snooze" data-snooze-min="15">💤 Snooze 15m</button>
+        <button type="button" class="btn btn-secondary" data-standalone-action="snooze" data-snooze-min="60">💤 Snooze 1h</button>
+        <button type="button" class="btn btn-secondary" data-standalone-action="speak">🔊 Speak Aloud (TTS)</button>
+        <button type="button" class="btn btn-secondary" data-standalone-action="mute">🔇 Mute Audio</button>
+      </div>
+      <div class="primary-alert-group">
+        <button type="button" class="btn btn-accent" data-standalone-action="complete">✅ Mark Ready / Complete</button>
+        <button type="button" class="btn btn-primary" data-standalone-action="dismiss">✕ Dismiss Alert</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/escape-html.js"></script>
+  <script src="/js/format-schedule-summary.js"></script>
+  <script src="/js/speak-browser-tts.js"></script>
+  <script src="/js/play-alarm-chime.js"></script>
+  <script src="/js/init-standalone-fullscreen.js"></script>
+  <script>
+    window.QNA.initStandaloneFullscreen();
+  </script>
+</body>
+</html>
