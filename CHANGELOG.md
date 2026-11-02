@@ -2,6 +2,13 @@
 
 All release notes and dated work notes live here (newest at top; Qatar time `+03:00`). Single local version (no 3-version `local`/`beta`/`stable` system).
 
+## v1.00.01 — 2026-11-03 (Qatar `+03:00`) · Gemini
+- **Custom MyReminder Desktop Icon (`scripts/generate-myreminder-icon.swift`, `MyReminder Control.app/Contents/Resources/AppIcon.icns`)**:
+  - Replaced the placeholder icon with a custom-rendered **MyReminder** icon (vibrant teal-to-royal-blue and QNA Anabi `#8A1538` squircle, twin golden ringing alarm bells with sound waves, crisp white clock face set to `11:00` and `3:00`, and an emerald checkmark badge), compiled into all standard macOS `.icns` sizes (`16x16` through `1024x1024`) and applied directly to `/Users/Hasan/Desktop/MyReminder Control.app` via `NSWorkspace.shared.setIcon` so Finder updates immediately.
+- **Persistent Online Daemon & Desktop Launcher Fix (`MyReminder Control.app/Contents/MacOS/launcher`, `~/Library/LaunchAgents/qa.org.qna.myreminder.plist`)**:
+  - Fixed `nohup: node: No such file or directory` when launching from macOS Finder by adding `/Users/Hasan/.local/node/bin` to `PATH` and resolving `/Users/Hasan/.local/node/bin/node` explicitly.
+  - Installed and loaded a persistent macOS `LaunchAgent` (`qa.org.qna.myreminder`) with `RunAtLoad` and `KeepAlive` so `http://127.0.0.1:5252` stays online continuously in the background.
+
 ## v1.00.00 — 2026-11-03 (Qatar `+03:00`) · Gemini
 - **Initial Release (Local `http://127.0.0.1:5252`)**:
   - **Smart Natural Language Command Bar & Parser (`src/parse-natural-reminder-text.js`)**: Parses multi-day, multi-time, and deadline instructions (including common typos) such as `"set remonder, on tuesdsday, wednesday, to prepare the 3 weekly templates, to be ready on thursady on QNA post editor, remond me at 11 am, 3 pm"` into structured days (`Tuesday`, `Wednesday`), multiple alarm times (`11:00`, `15:00`), deadline (`Thursday`), project (`QNA post editor`), and numbered subtask checklist items.

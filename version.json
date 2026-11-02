@@ -1,5 +1,6 @@
 {
-  "version": "1.00.00",
-  "updatedAt": "2026-11-03T01:08:00+03:00",
-  "note1_00_00": "Initial local release v1.00.00: Full-screen notification & job arrangement suite with web control dashboard (http://127.0.0.1:5252), natural language multi-day/multi-time schedule parser (e.g. Tue/Wed at 11 AM & 3 PM ready by Thursday on QNA post editor), rich notes, subtasks checklist, recorded audio voice notes with cache-busted playback, Voice-to-Text (STT) dictation, Text-to-Voice (TTS) browser + macOS say readout, native macOS full-screen alert overlay window, and Desktop app shortcut."
+  "version": "1.00.01",
+  "updatedAt": "2026-11-03T01:48:45+03:00",
+  "note1_00_00": "Initial local release v1.00.00: Full-screen notification & job arrangement suite with web control dashboard (http://127.0.0.1:5252), natural language multi-day/multi-time schedule parser (e.g. Tue/Wed at 11 AM & 3 PM ready by Thursday on QNA post editor), rich notes, subtasks checklist, recorded audio voice notes with cache-busted playback, Voice-to-Text (STT) dictation, Text-to-Voice (TTS) browser + macOS say readout, native macOS full-screen alert overlay window, and Desktop app shortcut.",
+  "note1_00_01": "Custom MyReminder Desktop icon (teal/royal-blue/Anabi gradient squircle with twin golden alarm bells, 11:00/3:00 clock face, and emerald checkmark badge) applied to MyReminder Control.app via iconutil and NSWorkspace.setIcon, plus fixed /Users/Hasan/.local/node/bin/node path in Desktop launcher and added persistent macOS LaunchAgent (qa.org.qna.myreminder.plist) so http://127.0.0.1:5252 stays online 24/7."
 }

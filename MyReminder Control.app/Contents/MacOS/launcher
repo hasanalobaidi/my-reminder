@@ -1,19 +1,23 @@
-#!/bin/bash
-set -euo pipefail
-
-export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
+#!/bin/zsh
+export PATH="/Users/Hasan/.local/node/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PATH:-}"
 
 PROJECT_DIR="/Users/Hasan/Desktop/Hasan/MyReminder"
 PORT="5252"
-DASHBOARD_URL="http://127.0.0.1:${PORT}"
+DASHBOARD_URL="http://127.0.0.1:${PORT}/"
+STATUS_URL="http://127.0.0.1:${PORT}/api/status"
 LOG_DIR="${HOME}/Library/Logs/MyReminder"
 mkdir -p "${LOG_DIR}"
 
-if ! curl -fsS "${DASHBOARD_URL}/api/status" >/dev/null 2>&1; then
-  cd "${PROJECT_DIR}"
-  nohup node "${PROJECT_DIR}/src/cli-start-server.js" >>"${LOG_DIR}/server.log" 2>&1 < /dev/null &
-  for _ in {1..20}; do
-    if curl -fsS "${DASHBOARD_URL}/api/status" >/dev/null 2>&1; then
+NODE_BIN="/Users/Hasan/.local/node/bin/node"
+if [[ ! -x "${NODE_BIN}" ]]; then
+  NODE_BIN="$(command -v node || true)"
+fi
+
+if ! curl -fsS --max-time 1 "${STATUS_URL}" >/dev/null 2>&1; then
+  cd "${PROJECT_DIR}" || exit 1
+  nohup "${NODE_BIN}" "${PROJECT_DIR}/src/cli-start-server.js" </dev/null >>"${LOG_DIR}/server.log" 2>&1 &
+  for _ in {1..25}; do
+    if curl -fsS --max-time 1 "${STATUS_URL}" >/dev/null 2>&1; then
       break
     fi
     sleep 0.25
