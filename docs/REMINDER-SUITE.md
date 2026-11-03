@@ -1,7 +1,7 @@
 # MyReminder — Full-Screen Notification & Job Arrangement Suite (`docs/REMINDER-SUITE.md`)
 
 ## Overview
-`MyReminder` (`v1.00.00`) is a local macOS + web control application (`http://127.0.0.1:5252`) for scheduling tasks, recurring multi-day/multi-time alarms, job deadlines, notes, recorded audio voice notes, Voice-to-Text (STT), Text-to-Voice (TTS), and OS-level full-screen alert notifications.
+`MyReminder` (`v1.00.02`) is a local macOS Desktop + installable web control application (`http://127.0.0.1:5252`) for scheduling tasks, recurring multi-day/multi-time alarms, job deadlines, notes, recorded audio voice notes, Voice-to-Text (STT), Text-to-Voice (TTS), real macOS Notification Center alerts, and OS-level full-screen alert notifications.
 
 ## Architecture & Key Capabilities
 1. **Natural Language Smart Parser (`src/parse-natural-reminder-text.js`)**:
@@ -23,5 +23,7 @@
    - **Voice-to-Text (STT)**: Browser `SpeechRecognition` / `webkitSpeechRecognition` dictation into the Smart Command Bar or Notes textarea (`en-US` and `ar-QA`).
    - **Text-to-Voice (TTS)**: Both browser `speechSynthesis` and macOS `/usr/bin/say` background readout.
    - **Recorded Voice Notes**: `MediaRecorder` microphone capture stored in `data/voice-notes/` and served with `?v=<savedFilename>` cache-busting.
-4. **Desktop App Shortcut**:
-   - `/Users/Hasan/Desktop/MyReminder Control.app` (and repo copy) starts the background daemon on port `5252` and opens the Web Control Dashboard.
+4. **Installed Mac Desktop App & Real macOS System Notifications**:
+   - **Native Mac App (`MyReminder Control.app` → `bin/MyReminderDesktopApp`)**: Installed in `/Applications/MyReminder Control.app` and `/Users/Hasan/Desktop/MyReminder Control.app`. Opens a standalone native macOS window (`NSWindow` + `WKWebView`) with custom Dock icon and menu bar instead of a Chrome browser tab.
+   - **Real macOS System Notifications (`src/send-macos-system-notification.js`)**: Dispatches real macOS Notification Center banners with sound (`"Crystal"`) via `/usr/bin/osascript` even when all browser tabs and windows are closed.
+   - **Installable PWA (`public/manifest.webmanifest`, `public/sw.js`, `public/js/register-pwa-and-notifications.js`)**: Full Web App Manifest, Service Worker, and OS Web Notification support.

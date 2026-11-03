@@ -10,6 +10,7 @@ const parseNaturalReminderText = require('./parse-natural-reminder-text');
 const computeNextTriggerAt = require('./compute-next-trigger-at');
 const speakReminderTts = require('./speak-reminder-tts');
 const launchNativeFullscreenAlert = require('./launch-native-fullscreen-alert');
+const sendMacosSystemNotification = require('./send-macos-system-notification');
 
 function handleReminderHttpRequest(req, res, state) {
   const parsedUrl = new URL(req.url || '/', `http://${req.headers.host || '127.0.0.1'}`);
@@ -258,6 +259,11 @@ function handleReminderHttpRequest(req, res, state) {
     saveRemindersStore(store);
 
     broadcastSse({ type: 'fullscreen-alert', alert: alertRecord });
+    sendMacosSystemNotification({
+      title: `⏰ ${task.title}`,
+      subtitle: `${task.project || 'General'}${task.readyByDay ? ` · Ready on ${task.readyByDay.charAt(0).toUpperCase() + task.readyByDay.slice(1)}` : ''}`,
+      message: task.notes || ttsMessage
+    });
     if (task.ttsEnabled !== false) {
       speakReminderTts({ text: ttsMessage });
     }
@@ -490,6 +496,21 @@ function handleReminderHttpRequest(req, res, state) {
     return;
   }
 
+  // 13b. Real macOS System Notification test/dispatch endpoint
+  if (method === 'POST' && pathname === '/api/notifications/test') {
+    readJsonBody()
+      .then((body) => {
+        const result = sendMacosSystemNotification({
+          title: body.title || '⏰ MyReminder Mac Notification Active',
+          subtitle: body.subtitle || 'QNA Post Editor · Ready on Thursday',
+          message: body.message || 'Prepare the 3 weekly templates (Tuesday & Wednesday at 11:00 AM & 3:00 PM).'
+        });
+        sendJson(200, { ok: true, notification: result });
+      })
+      .catch((err) => sendJson(400, { ok: false, error: err.message }));
+    return;
+  }
+
   // 14. Static files from public/
   const publicDir = path.join(__dirname, '..', 'public');
   const relPath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
@@ -505,6 +526,7 @@ function handleReminderHttpRequest(req, res, state) {
     '.css': 'text/css; charset=utf-8',
     '.js': 'application/javascript; charset=utf-8',
     '.json': 'application/json; charset=utf-8',
+    '.webmanifest': 'application/manifest+json; charset=utf-8',
     '.png': 'image/png',
     '.svg': 'image/svg+xml',
     '.ico': 'image/x-icon'

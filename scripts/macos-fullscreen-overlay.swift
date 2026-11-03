@@ -4,6 +4,7 @@ import WebKit
 final class OverlayAppDelegate: NSObject, NSApplicationDelegate, WKUIDelegate, WKNavigationDelegate {
     var window: NSWindow!
     var webView: WKWebView!
+    var watchTimer: Timer?
     let targetUrlString: String
 
     init(urlString: String) {
@@ -20,7 +21,7 @@ final class OverlayAppDelegate: NSObject, NSApplicationDelegate, WKUIDelegate, W
             backing: .buffered,
             defer: false
         )
-        window.level = .floating
+        window.level = .statusBar
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         window.isOpaque = true
         window.backgroundColor = NSColor(calibratedRed: 0.16, green: 0.02, blue: 0.07, alpha: 1.0)
@@ -38,6 +39,13 @@ final class OverlayAppDelegate: NSObject, NSApplicationDelegate, WKUIDelegate, W
 
         if let url = URL(string: targetUrlString) {
             webView.load(URLRequest(url: url))
+        }
+
+        watchTimer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+            guard let self = self, let wv = self.webView else { return }
+            if wv.title == "MYREMINDER_CLOSE_OVERLAY" {
+                NSApp.terminate(nil)
+            }
         }
 
         NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in

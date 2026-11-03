@@ -1,6 +1,6 @@
 # MyReminder — Agent Context (`Codex.md`)
 
-**Latest release: v1.00.01 (2026-11-03) — see `CHANGELOG.md`.** (Update this one line on every release; release notes go only in `CHANGELOG.md`.)
+**Latest release: v1.00.02 (2026-11-03) — see `CHANGELOG.md`.** (Update this one line on every release; release notes go only in `CHANGELOG.md`.)
 
 **Full rules: `AGENTS.md` (symlink to `/Users/Hasan/Desktop/QNA work/AGENTS.md`) — read it before any code change.** This project follows the QNA Post Editor rules **except the 3-version (`local` / `beta` / `stable`) system**: `MyReminder` has a **single local version** running on `http://127.0.0.1:5252`.
 

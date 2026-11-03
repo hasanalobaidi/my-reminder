@@ -4,6 +4,7 @@ const readRemindersStore = require('./read-reminders-store');
 const saveRemindersStore = require('./save-reminders-store');
 const speakReminderTts = require('./speak-reminder-tts');
 const launchNativeFullscreenAlert = require('./launch-native-fullscreen-alert');
+const sendMacosSystemNotification = require('./send-macos-system-notification');
 
 function tickReminderScheduler(state) {
   if (!state || typeof state !== 'object') return { triggered: [] };
@@ -68,6 +69,12 @@ function tickReminderScheduler(state) {
         } catch (_) {}
       }
     }
+
+    sendMacosSystemNotification({
+      title: `⏰ ${task.title}`,
+      subtitle: `${task.project || 'General'}${task.readyByDay ? ` · Ready on ${task.readyByDay.charAt(0).toUpperCase() + task.readyByDay.slice(1)}` : ''}`,
+      message: task.notes || ttsMessage
+    });
 
     if (task.ttsEnabled !== false) {
       speakReminderTts({ text: ttsMessage });

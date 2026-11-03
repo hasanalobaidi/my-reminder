@@ -666,6 +666,7 @@ window.QNA.initReminderDashboard = function initReminderDashboard() {
         if (msg.type === 'fullscreen-alert' && msg.alert) {
           state.activeAlert = msg.alert;
           window.QNA.renderFullscreenAlert(msg.alert);
+          window.dispatchEvent(new CustomEvent('myreminder:fullscreen-alert', { detail: msg.alert }));
           fetchAllData();
         } else if (msg.type === 'alert-closed') {
           state.activeAlert = null;

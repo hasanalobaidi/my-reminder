@@ -25,5 +25,9 @@ if ! curl -fsS --max-time 1 "${STATUS_URL}" >/dev/null 2>&1; then
 fi
 
 if [[ "${MYREMINDER_HEADLESS_TEST:-0}" != "1" ]]; then
-  open "${DASHBOARD_URL}"
+  if [[ -x "${PROJECT_DIR}/bin/MyReminderDesktopApp" ]]; then
+    exec "${PROJECT_DIR}/bin/MyReminderDesktopApp" "${DASHBOARD_URL}"
+  else
+    open "${DASHBOARD_URL}"
+  fi
 fi

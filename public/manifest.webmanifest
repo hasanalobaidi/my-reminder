@@ -1,0 +1,25 @@
+{
+  "id": "qa.org.qna.myreminder",
+  "name": "MyReminder Control — QNA Schedule & Alarm Suite",
+  "short_name": "MyReminder",
+  "description": "Mac Desktop & Installable Web App for QNA Weekly Templates, Multi-Time Alarms, Full-Screen Alerts, Voice Notes, STT & TTS.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#12090d",
+  "theme_color": "#8A1538",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -4,7 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#8A1538">
   <title>MyReminder Control — QNA Task, Schedule &amp; Full-Screen Alarm Suite</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
@@ -18,6 +22,7 @@
     </div>
     <div class="header-controls">
       <span id="live-qatar-clock" class="clock-pill" aria-live="polite">Loading Qatar time...</span>
+      <button type="button" id="enable-os-notifications-btn" class="btn btn-secondary">🔔 Test Mac Notification</button>
       <button type="button" id="open-new-reminder-btn" class="btn btn-accent">+ New Reminder / Job</button>
     </div>
   </header>
@@ -284,8 +289,10 @@
   <script src="/js/manage-voice-note-recorder.js"></script>
   <script src="/js/render-fullscreen-alert.js"></script>
   <script src="/js/render-reminder-cards.js"></script>
+  <script src="/js/register-pwa-and-notifications.js"></script>
   <script src="/js/init-reminder-dashboard.js"></script>
   <script>
+    window.QNA.registerPwaAndNotifications();
     window.QNA.initReminderDashboard();
   </script>
 </body>

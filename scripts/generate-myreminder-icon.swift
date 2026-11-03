@@ -215,7 +215,12 @@ for (name, px) in specs {
 
 let projectAppPath = "/Users/Hasan/Desktop/Hasan/MyReminder/MyReminder Control.app"
 let desktopAppPath = "/Users/Hasan/Desktop/MyReminder Control.app"
+let applicationsAppPath = "/Applications/MyReminder Control.app"
 let icnsPath = "\(projectAppPath)/Contents/Resources/AppIcon.icns"
+let publicIconsDir = "/Users/Hasan/Desktop/Hasan/MyReminder/public/icons"
+try? fm.createDirectory(atPath: publicIconsDir, withIntermediateDirectories: true)
+savePng(drawReminderIcon(size: 192), to: "\(publicIconsDir)/icon-192.png", pixelSize: 192)
+savePng(drawReminderIcon(size: 512), to: "\(publicIconsDir)/icon-512.png", pixelSize: 512)
 
 let proc = Process()
 proc.executableURL = URL(fileURLWithPath: "/usr/bin/iconutil")
@@ -223,12 +228,14 @@ proc.arguments = ["-c", "icns", iconsetDir, "-o", icnsPath]
 try proc.run()
 proc.waitUntilExit()
 
-if fm.fileExists(atPath: desktopAppPath) {
-    try? fm.removeItem(atPath: "\(desktopAppPath)/Contents/Resources/AppIcon.icns")
-    try? fm.copyItem(atPath: icnsPath, toPath: "\(desktopAppPath)/Contents/Resources/AppIcon.icns")
+for targetApp in [desktopAppPath, applicationsAppPath] {
+    if fm.fileExists(atPath: targetApp) {
+        try? fm.removeItem(atPath: "\(targetApp)/Contents/Resources/AppIcon.icns")
+        try? fm.copyItem(atPath: icnsPath, toPath: "\(targetApp)/Contents/Resources/AppIcon.icns")
+        NSWorkspace.shared.setIcon(masterImage, forFile: targetApp, options: [])
+    }
 }
 
 // Force Finder on Desktop to immediately display the new custom icon
 NSWorkspace.shared.setIcon(masterImage, forFile: projectAppPath, options: [])
-NSWorkspace.shared.setIcon(masterImage, forFile: desktopAppPath, options: [])
-print("[PASS] Generated custom MyReminder AppIcon.icns and applied to Desktop bundle.")
+print("[PASS] Generated custom MyReminder AppIcon.icns + PWA icons and applied to Desktop & Applications bundles.")

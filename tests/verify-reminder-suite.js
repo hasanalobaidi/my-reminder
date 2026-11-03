@@ -99,7 +99,31 @@ async function verifyReminderSuite() {
     const fsRes = await fetch(`${baseUrl}/fullscreen.html`);
     assert.equal(fsRes.status, 200);
 
-    console.log('[PASS] verify-reminder-suite: All API, Voice Note (?v= cache-busted), Full-Screen Trigger, Snooze, and Static HTML checks passed.');
+    // 8. Verify PWA manifest, service worker, and macOS system notification endpoint
+    const manifestRes = await fetch(`${baseUrl}/manifest.webmanifest`);
+    assert.equal(manifestRes.status, 200);
+    assert.ok(String(manifestRes.headers.get('content-type') || '').includes('application/manifest+json'));
+    const manifestJson = await manifestRes.json();
+    assert.equal(manifestJson.display, 'standalone');
+    assert.ok(Array.isArray(manifestJson.icons) && manifestJson.icons.length >= 2);
+
+    const swRes = await fetch(`${baseUrl}/sw.js`);
+    assert.equal(swRes.status, 200);
+
+    const notifyRes = await fetch(`${baseUrl}/api/notifications/test`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Headless Test Notification' })
+    });
+    assert.equal(notifyRes.status, 200);
+    const notifyJson = await notifyRes.json();
+    assert.equal(notifyJson.ok, true);
+    assert.equal(notifyJson.notification.skipped, true);
+
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'bin', 'MyReminderDesktopApp')));
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'bin', 'MyReminderFullscreenOverlay')));
+
+    console.log('[PASS] verify-reminder-suite: All API, Voice Note (?v= cache-busted), Full-Screen Trigger, Snooze, PWA Manifest, and Native Mac Notification checks passed.');
   } finally {
     await instance.close();
     fs.rmSync(tempDataDir, { recursive: true, force: true });
