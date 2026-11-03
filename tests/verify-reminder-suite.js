@@ -123,7 +123,68 @@ async function verifyReminderSuite() {
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'bin', 'MyReminderDesktopApp')));
     assert.ok(fs.existsSync(path.join(__dirname, '..', 'bin', 'MyReminderFullscreenOverlay')));
 
-    console.log('[PASS] verify-reminder-suite: All API, Voice Note (?v= cache-busted), Full-Screen Trigger, Snooze, PWA Manifest, and Native Mac Notification checks passed.');
+    // 9. Verify Android Network Sync Info, QR SVG, ICS Calendar, Two-Way Sync & GitHub OTA Bundle
+    const netRes = await fetch(`${baseUrl}/api/network-info`);
+    assert.equal(netRes.status, 200);
+    const netJson = await netRes.json();
+    assert.equal(netJson.ok, true);
+    assert.ok(netJson.primaryLanUrl.includes(':'));
+    assert.ok(netJson.ota && netJson.ota.githubVersionUrl.includes('raw.githubusercontent.com'));
+
+    const qrRes = await fetch(`${baseUrl}/api/qr.svg?text=${encodeURIComponent(netJson.primaryLanUrl)}`);
+    assert.equal(qrRes.status, 200);
+    assert.ok(String(qrRes.headers.get('content-type') || '').includes('image/svg+xml'));
+    const qrSvg = await qrRes.text();
+    assert.ok(qrSvg.includes('<svg') && qrSvg.includes('<path'));
+
+    const icsRes = await fetch(`${baseUrl}/api/reminders.ics`);
+    assert.equal(icsRes.status, 200);
+    const icsText = await icsRes.text();
+    assert.ok(icsText.includes('BEGIN:VCALENDAR') && icsText.includes('BEGIN:VALARM'));
+
+    const syncRes = await fetch(`${baseUrl}/api/sync`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        clientDeviceId: 'android-test-device',
+        clientReminders: [
+          {
+            id: 'rem-android-offline-1',
+            title: 'Android Offline Scheduled Task',
+            project: 'QNA post editor',
+            scheduleType: 'weekly',
+            daysOfWeek: ['tuesday', 'wednesday'],
+            times: ['11:00', '15:00'],
+            readyByDay: 'thursday',
+            updatedAt: new Date(Date.now() + 5000).toISOString()
+          }
+        ]
+      })
+    });
+    assert.equal(syncRes.status, 200);
+    const syncJson = await syncRes.json();
+    assert.equal(syncJson.ok, true);
+    assert.ok(syncJson.reminders.some((r) => r.id === 'rem-android-offline-1'));
+
+    const otaRes = await fetch(`${baseUrl}/api/ota/bundle`);
+    assert.equal(otaRes.status, 200);
+    const otaJson = await otaRes.json();
+    assert.equal(otaJson.ok, true);
+    assert.ok(otaJson.bundleHash && otaJson.files && otaJson.files['index.html']);
+
+    const pubRes = await fetch(`${baseUrl}/api/ota/publish-github`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ owner: 'hasanalobaidi', repo: 'my-reminder' })
+    });
+    assert.equal(pubRes.status, 200);
+    const pubJson = await pubRes.json();
+    assert.equal(pubJson.ok, true);
+    assert.equal(pubJson.dryRun, true);
+
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'public', 'download', 'MyReminder.apk')));
+
+    console.log('[PASS] verify-reminder-suite: All API, Voice Note (?v= cache-busted), Full-Screen Trigger, Snooze, PWA Manifest, Native Mac Notification, Android APK, Two-Way Sync, QR SVG, ICS, and GitHub OTA Bundle checks passed.');
   } finally {
     await instance.close();
     fs.rmSync(tempDataDir, { recursive: true, force: true });

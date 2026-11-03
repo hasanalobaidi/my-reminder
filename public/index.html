@@ -22,6 +22,8 @@
     </div>
     <div class="header-controls">
       <span id="live-qatar-clock" class="clock-pill" aria-live="polite">Loading Qatar time...</span>
+      <span id="android-sync-status-pill" class="clock-pill" aria-live="polite">🟢 Mac &amp; Android Linked</span>
+      <button type="button" id="open-android-sync-btn" class="btn btn-secondary">📱 Android App &amp; GitHub Auto-Update</button>
       <button type="button" id="enable-os-notifications-btn" class="btn btn-secondary">🔔 Test Mac Notification</button>
       <button type="button" id="open-new-reminder-btn" class="btn btn-accent">+ New Reminder / Job</button>
     </div>
@@ -281,6 +283,87 @@
     </div>
   </dialog>
 
+  <!-- Native Modal Dialog: Android App, QR Pairing, Two-Way Sync & GitHub Live Auto-Update -->
+  <dialog id="android-sync-dialog" closedby="any" aria-labelledby="android-sync-dialog-title">
+    <div class="dialog-header">
+      <div>
+        <h2 id="android-sync-dialog-title">📱 Android Companion App &amp; GitHub Live Auto-Update</h2>
+        <span id="android-current-version-badge" class="badge badge-deadline" style="margin-top: 0.25rem;">v1.00.03 · Live GitHub + Mac OTA Active</span>
+      </div>
+      <button type="button" id="android-sync-close-btn" class="btn btn-sm btn-secondary">✕ Close</button>
+    </div>
+
+    <div class="dialog-body">
+      <div class="android-qr-grid">
+        <div class="android-qr-card">
+          <h3>1. Native Android APK Installer</h3>
+          <p class="field-hint">
+            Scan with your Android camera to download and install <strong>MyReminder.apk</strong> once. Includes native lock-screen alarms, vibration, TTS &amp; background sync.
+          </p>
+          <img
+            id="android-qr-apk-img"
+            class="qr-code-img"
+            src="/api/qr.svg?text=http%3A%2F%2F127.0.0.1%3A5252%2Fdownload%2FMyReminder.apk"
+            width="180"
+            height="180"
+            alt="QR Code to download MyReminder.apk"
+          >
+          <a id="android-apk-download-link" href="/download/MyReminder.apk" download="MyReminder.apk" class="btn btn-primary" style="width: 100%;">
+            ⬇️ Download MyReminder.apk
+          </a>
+        </div>
+
+        <div class="android-qr-card">
+          <h3>2. Instant Web App &amp; Mac Wi-Fi / 4G Pairing</h3>
+          <p class="field-hint">
+            Scan to pair your Android phone automatically with this Mac over Wi-Fi AND 4G/5G remote tunnel (or tap <em>Add to Home Screen</em> for instant PWA).
+          </p>
+          <img
+            id="android-qr-pair-img"
+            class="qr-code-img"
+            src="/api/qr.svg?text=http%3A%2F%2F127.0.0.1%3A5252"
+            width="180"
+            height="180"
+            alt="QR Code to pair Android phone with Mac"
+          >
+          <div class="network-url-box">
+            <div><strong>Wi-Fi LAN:</strong> <code id="android-lan-url-text">http://192.168.0.128:5252</code></div>
+            <div><strong>4G/5G Bridge:</strong> <code id="android-remote-url-text">Connecting...</code></div>
+          </div>
+          <button type="button" id="android-toggle-tunnel-btn" class="btn btn-sm btn-secondary" style="width: 100%;">
+            🌐 Refresh 4G/5G Remote Tunnel Link
+          </button>
+        </div>
+      </div>
+
+      <div class="smart-bar-card" style="padding: 1rem 1.2rem;">
+        <h3 class="smart-bar-title" style="margin-bottom: 0.35rem;">⚡ Zero-Reinstall GitHub Live Auto-Update (OTA)</h3>
+        <p class="field-hint">
+          Install the Android APK <strong>only once</strong>. Every future version update is packaged into <code>ota-bundle.json</code> and pushed to GitHub + this Mac. Your Android app checks GitHub &amp; Mac automatically and hot-swaps the new version without ever reinstalling an APK.
+        </p>
+        <div class="smart-bar-row" style="margin-top: 0.65rem;">
+          <input
+            type="text"
+            id="android-github-repo-input"
+            class="smart-bar-input"
+            value="hasanalobaidi/my-reminder"
+            aria-label="GitHub repository for OTA auto-updates"
+            placeholder="hasanalobaidi/my-reminder"
+          >
+          <button type="button" id="ota-check-update-btn" class="btn btn-secondary">🔄 Check &amp; Apply OTA Update Now</button>
+          <button type="button" id="ota-publish-github-btn" class="btn btn-primary">🚀 Push Update to GitHub Now</button>
+        </div>
+        <div class="smart-bar-row" style="margin-top: 0.65rem;">
+          <button type="button" id="android-sync-now-btn" class="btn btn-sm btn-secondary">🔁 Sync Reminders &amp; Native Android Alarms</button>
+          <a href="/api/reminders.ics" download="myreminder-qna-schedule.ics" class="btn btn-sm btn-secondary">📅 Subscribe / Export Android Calendar (.ics)</a>
+        </div>
+        <p id="ota-update-status-msg" class="field-hint" style="margin-top: 0.6rem; font-weight: 600;" aria-live="polite">
+          ✅ GitHub OTA &amp; Mac two-way sync ready.
+        </p>
+      </div>
+    </div>
+  </dialog>
+
   <script src="/js/escape-html.js"></script>
   <script src="/js/format-schedule-summary.js"></script>
   <script src="/js/speak-browser-tts.js"></script>
@@ -290,9 +373,11 @@
   <script src="/js/render-fullscreen-alert.js"></script>
   <script src="/js/render-reminder-cards.js"></script>
   <script src="/js/register-pwa-and-notifications.js"></script>
+  <script src="/js/init-android-sync-and-ota.js"></script>
   <script src="/js/init-reminder-dashboard.js"></script>
   <script>
     window.QNA.registerPwaAndNotifications();
+    window.QNA.initAndroidSyncAndOta();
     window.QNA.initReminderDashboard();
   </script>
 </body>

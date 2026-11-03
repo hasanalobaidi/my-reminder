@@ -822,3 +822,109 @@ input:user-invalid ~ .error-message,
   flex-wrap: wrap;
   gap: 0.6rem;
 }
+
+/* Android Companion App, QR Pairing, Container Queries & Dynamic Viewport (100dvh) */
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.fullscreen-dialog {
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+}
+
+.fullscreen-dialog[open],
+.standalone-fullscreen-body {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.clock-pill.is-offline {
+  background: rgba(245, 158, 11, 0.28);
+  border-color: var(--accent-amber);
+  color: #fff6d6;
+}
+
+.reminders-grid {
+  container-type: inline-size;
+  container-name: reminders-grid;
+}
+
+@container reminders-grid (max-width: 520px) {
+  .reminder-card {
+    padding: 0.95rem;
+  }
+  .card-actions .btn {
+    flex: 1 1 calc(50% - 0.3rem);
+  }
+}
+
+.android-qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.android-qr-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.6rem;
+}
+
+.android-qr-card h3 {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.8vw, 1.08rem);
+  color: var(--qna-anabi);
+}
+
+@media (prefers-color-scheme: dark) {
+  .android-qr-card h3 {
+    color: var(--qna-gold);
+  }
+}
+
+.qr-code-img {
+  width: 180px;
+  height: 180px;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--qna-anabi);
+  background: #ffffff;
+  padding: 0.3rem;
+}
+
+.network-url-box {
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.65rem;
+  font-size: 0.78rem;
+  text-align: left;
+  word-break: break-all;
+}
+
+@media (max-width: 680px) {
+  .app-header {
+    padding: 1rem 1.1rem;
+  }
+  .app-container {
+    padding: 1rem 1rem 3.5rem;
+  }
+  .reminders-grid {
+    grid-template-columns: 1fr;
+  }
+  .fullscreen-alert-shell {
+    padding: 1.35rem;
+    border-radius: 16px;
+  }
+}

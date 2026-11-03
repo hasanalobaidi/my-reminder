@@ -2,6 +2,19 @@
 
 All release notes and dated work notes live here (newest at top; Qatar time `+03:00`). Single local version (no 3-version `local`/`beta`/`stable` system).
 
+## v1.00.03 — 2026-11-03 (Qatar `+03:00`) · Gemini
+- **Native Android App (`android-app/` → `public/download/MyReminder.apk` & `/Users/Hasan/Desktop/MyReminder.apk`)**:
+  - Built and signed the native Android application (`qa.org.qna.myreminder`, SDK 34) with `MainActivity`, `FullScreenAlertActivity`, `AlarmReceiver`, `BootReceiver`, and `AlarmScheduler`.
+  - Schedules exact native Android `AlarmManager` (`setExactAndAllowWhileIdle`) alarms in `Asia/Qatar` time so reminders wake the phone screen over the lock screen (`setShowWhenLocked(true)`, `setTurnScreenOn(true)`), vibrate, play the alarm tone, and read the reminder aloud via native Android `TextToSpeech` — even when offline or away from the Mac.
+  - Reschedules all saved reminders automatically on Android device reboot (`BOOT_COMPLETED`).
+- **Two-Way Mac ↔ Android Sync (Wi-Fi LAN + 4G/5G Remote Tunnel + Offline-First)**:
+  - Bound the Mac control server (`src/start-reminder-server.js`) to `0.0.0.0:5252` so Android devices on the same Wi-Fi (`http://192.168.0.128:5252`) connect directly, plus added an automatic background 4G/5G SSH reverse tunnel (`src/manage-remote-tunnel.js`) for remote syncing outside the office/home.
+  - Added two-way delta/timestamp merge endpoint (`POST /api/sync` in `src/handle-reminder-http-request.js`) and client multi-host + offline-first wrapper (`public/js/init-android-sync-and-ota.js`) so changes made offline on Android automatically sync back to the Mac when reconnected.
+  - Added QR Code pairing & APK download modal (`📱 Android App & GitHub Auto-Update` in `public/index.html`) powered by a pure-JS ISO 18004 QR SVG generator (`src/generate-qr-svg.js`, `/api/qr.svg`) and RFC 5545 `.ics` calendar/alarm export (`src/generate-ics-calendar-feed.js`, `/api/reminders.ics`).
+- **Zero-Reinstall GitHub Live Auto-Update (OTA)**:
+  - Added `src/build-ota-update-bundle.js` and `src/publish-github-ota-update.js` (`GET /api/ota/bundle`, `POST /api/ota/publish-github`) to package all web/UI/JS/CSS assets with SHA-256 verification into `public/ota-bundle.json` and push directly to GitHub (`hasanalobaidi/my-reminder`).
+  - Both the native Android APK (`MainActivity.downloadAndApplyBundle` + `@JavascriptInterface MyReminderAndroid.applyOtaBundleFromUrl`) and PWA check GitHub (`https://raw.githubusercontent.com/hasanalobaidi/my-reminder/main/version.json`) and the linked Mac on startup, every 15 minutes, and on manual click — downloading `ota-bundle.json` into internal storage (`filesDir/ota_bundle/`) and hot-reloading the new version **with zero `.apk` reinstall ever needed**.
+
 ## v1.00.02 — 2026-11-03 (Qatar `+03:00`) · Gemini
 - **Installed Native macOS Desktop App Window (`scripts/macos-desktop-app.swift` → `bin/MyReminderDesktopApp`, `MyReminder Control.app`)**:
   - Upgraded `MyReminder Control.app` so launching it opens a **dedicated standalone macOS Desktop App window** (`NSWindow` + `WKWebView` with native macOS menu bar, `Cmd+C`/`Cmd+V`/`Cmd+A`/`Cmd+R`/`Cmd+Q` shortcuts, microphone permission grant for voice notes, and custom Dock icon) instead of opening a Chrome browser tab.

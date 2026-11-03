@@ -6,6 +6,8 @@ const readReminderConfig = require('./read-reminder-config');
 const readRemindersStore = require('./read-reminders-store');
 const handleReminderHttpRequest = require('./handle-reminder-http-request');
 const tickReminderScheduler = require('./tick-reminder-scheduler');
+const buildOtaUpdateBundle = require('./build-ota-update-bundle');
+const manageRemoteTunnel = require('./manage-remote-tunnel');
 
 function startReminderServer(customPort) {
   const cfg = readReminderConfig();
@@ -33,11 +35,19 @@ function startReminderServer(customPort) {
     handleReminderHttpRequest(req, res, state);
   });
 
-  server.listen(port, '127.0.0.1');
+  try {
+    buildOtaUpdateBundle({ writeToDisk: true });
+  } catch (_) {}
+
+  const bindHost = process.env.MYREMINDER_HEADLESS_TEST === '1' ? '127.0.0.1' : '0.0.0.0';
+  server.listen(port, bindHost);
   server.on('listening', () => {
     const addr = server.address();
     if (addr && typeof addr.port === 'number') {
       state.port = addr.port;
+    }
+    if (process.env.MYREMINDER_HEADLESS_TEST !== '1' && cfg.remoteTunnelEnabled !== false) {
+      manageRemoteTunnel({ action: 'start', port: state.port });
     }
   });
 

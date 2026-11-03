@@ -11,11 +11,27 @@ const computeNextTriggerAt = require('./compute-next-trigger-at');
 const speakReminderTts = require('./speak-reminder-tts');
 const launchNativeFullscreenAlert = require('./launch-native-fullscreen-alert');
 const sendMacosSystemNotification = require('./send-macos-system-notification');
+const getNetworkSyncInfo = require('./get-network-sync-info');
+const buildOtaUpdateBundle = require('./build-ota-update-bundle');
+const publishGithubOtaUpdate = require('./publish-github-ota-update');
+const manageRemoteTunnel = require('./manage-remote-tunnel');
+const generateIcsCalendarFeed = require('./generate-ics-calendar-feed');
+const generateQrSvg = require('./generate-qr-svg');
 
 function handleReminderHttpRequest(req, res, state) {
   const parsedUrl = new URL(req.url || '/', `http://${req.headers.host || '127.0.0.1'}`);
   const pathname = parsedUrl.pathname;
   const method = (req.method || 'GET').toUpperCase();
+
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Device-Id');
+
+  if (method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
 
   const sendJson = (statusCode, data) => {
     const body = JSON.stringify(data);
@@ -511,6 +527,134 @@ function handleReminderHttpRequest(req, res, state) {
     return;
   }
 
+  // 13c. Network Sync, QR Pairing & Android APK Info endpoint
+  if (method === 'GET' && pathname === '/api/network-info') {
+    const tunnel = manageRemoteTunnel({ action: 'status', port: state.port });
+    const info = getNetworkSyncInfo({
+      port: state.port,
+      remoteTunnelUrl: tunnel.url,
+      remoteTunnelStatus: tunnel.status
+    });
+    sendJson(200, info);
+    return;
+  }
+
+  // 13d. Remote 4G/5G Tunnel Bridge control endpoint
+  if (method === 'POST' && pathname === '/api/tunnel/toggle') {
+    readJsonBody()
+      .then((body) => {
+        const action = body.enable === false ? 'stop' : 'start';
+        const tunnel = manageRemoteTunnel({ action, port: state.port });
+        sendJson(200, tunnel);
+      })
+      .catch((err) => sendJson(400, { ok: false, error: err.message }));
+    return;
+  }
+
+  // 13e. Live OTA Update Bundle endpoint (for zero-reinstall Android & Web updates)
+  if (method === 'GET' && pathname === '/api/ota/bundle') {
+    const bundle = buildOtaUpdateBundle({ writeToDisk: true });
+    sendJson(200, bundle);
+    return;
+  }
+
+  // 13f. Publish OTA Bundle & Version to GitHub endpoint
+  if (method === 'POST' && pathname === '/api/ota/publish-github') {
+    readJsonBody()
+      .then((body) => {
+        const result = publishGithubOtaUpdate(body);
+        if (result.ok) {
+          broadcastSse({
+            type: 'ota-update-available',
+            version: result.version,
+            bundleHash: result.bundleHash,
+            repo: result.repo
+          });
+        }
+        sendJson(200, result);
+      })
+      .catch((err) => sendJson(400, { ok: false, error: err.message }));
+    return;
+  }
+
+  // 13g. Two-Way Offline-First Android <-> Mac Sync endpoint
+  if (method === 'POST' && pathname === '/api/sync') {
+    readJsonBody()
+      .then((body) => {
+        const store = readRemindersStore();
+        const clientReminders = Array.isArray(body.clientReminders) ? body.clientReminders : [];
+        let changed = false;
+
+        for (const incoming of clientReminders) {
+          if (!incoming || !incoming.id || !incoming.title) continue;
+          const idx = store.reminders.findIndex((r) => r.id === incoming.id);
+          if (idx === -1) {
+            incoming.nextTriggerAt = computeNextTriggerAt(incoming);
+            store.reminders.unshift(incoming);
+            changed = true;
+          } else {
+            const existing = store.reminders[idx];
+            const incomingTime = new Date(incoming.updatedAt || 0).getTime();
+            const existingTime = new Date(existing.updatedAt || 0).getTime();
+            if (!Number.isNaN(incomingTime) && incomingTime > existingTime) {
+              const merged = { ...existing, ...incoming, id: existing.id };
+              merged.nextTriggerAt = computeNextTriggerAt(merged);
+              store.reminders[idx] = merged;
+              changed = true;
+            }
+          }
+        }
+
+        if (changed) {
+          saveRemindersStore(store);
+          broadcastSse({ type: 'reminders-updated' });
+        }
+
+        const verPath = path.join(__dirname, '..', 'version.json');
+        let ver = { version: '1.00.03' };
+        try {
+          ver = JSON.parse(fs.readFileSync(verPath, 'utf8'));
+        } catch (_) {}
+
+        sendJson(200, {
+          ok: true,
+          syncedAt: new Date().toISOString(),
+          version: ver.version,
+          mergedChanges: changed,
+          reminders: store.reminders,
+          alertHistory: store.alertHistory || [],
+          activeAlert: state.activeAlert || null
+        });
+      })
+      .catch((err) => sendJson(400, { ok: false, error: err.message }));
+    return;
+  }
+
+  // 13h. iCalendar (.ics) Feed for Android & macOS Calendar / Alarm Clock integration
+  if (method === 'GET' && pathname === '/api/reminders.ics') {
+    const store = readRemindersStore();
+    const icsBody = generateIcsCalendarFeed(store.reminders);
+    res.writeHead(200, {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Content-Disposition': 'attachment; filename="MyReminder-QNA-Schedule.ics"',
+      'Cache-Control': 'no-cache'
+    });
+    res.end(icsBody);
+    return;
+  }
+
+  // 13i. Scannable QR Code SVG generator for Android pairing & APK download
+  if (method === 'GET' && pathname === '/api/qr.svg') {
+    const targetText = parsedUrl.searchParams.get('text') || `http://127.0.0.1:${state.port || 5252}`;
+    const svg = generateQrSvg(targetText);
+    res.writeHead(200, {
+      'Content-Type': 'image/svg+xml; charset=utf-8',
+      'Cache-Control': 'no-cache'
+    });
+    res.end(svg);
+    return;
+  }
+
   // 14. Static files from public/
   const publicDir = path.join(__dirname, '..', 'public');
   const relPath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
@@ -527,6 +671,8 @@ function handleReminderHttpRequest(req, res, state) {
     '.js': 'application/javascript; charset=utf-8',
     '.json': 'application/json; charset=utf-8',
     '.webmanifest': 'application/manifest+json; charset=utf-8',
+    '.apk': 'application/vnd.android.package-archive',
+    '.ics': 'text/calendar; charset=utf-8',
     '.png': 'image/png',
     '.svg': 'image/svg+xml',
     '.ico': 'image/x-icon'

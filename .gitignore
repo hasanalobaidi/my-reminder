@@ -9,3 +9,7 @@ backups/
 .DS_Store
 Icon?
 */Icon?
+android-app/build/
+android-app/*.keystore
+android-app/app/src/main/assets/www/
+android-app/app/src/main/res/mipmap-*/
